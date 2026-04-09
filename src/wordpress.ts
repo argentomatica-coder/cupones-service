@@ -98,7 +98,28 @@ function generateCouponsHTML(data: ExtractedCoupons): string {
     </div>`;
 }
 
-// Publica un nuevo post en la categoría de cupones (compatible con cupones.html)
+// Busca si ya existe un post de la misma campaña en la categoría
+async function findExistingCampaignPost(
+  baseUrl: string, auth: string, categoryId: number, eventName: string
+): Promise<number | null> {
+  try {
+    const res = await fetch(
+      `${baseUrl}/wp-json/wp/v2/posts?categories=${categoryId}&per_page=10&status=publish`,
+      { headers: { Authorization: `Basic ${auth}` } }
+    );
+    if (!res.ok) return null;
+    const posts = await res.json() as any[];
+    // Buscar post cuyo título contenga el nombre de la campaña
+    const normalizedEvent = eventName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const match = posts.find((p: any) => {
+      const title = (p.title?.rendered || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      return title.includes(normalizedEvent) || normalizedEvent.includes(title.replace(/cuponesaliexpress/g, '').trim());
+    });
+    return match ? match.id : null;
+  } catch { return null; }
+}
+
+// Publica o actualiza un post de cupones (compatible con cupones.html)
 export async function updateWordPressCouponsPage(data: ExtractedCoupons): Promise<void> {
   const baseUrl = process.env.WP_SITE_URL?.replace(/\/$/, '');
   const username = process.env.WP_USERNAME;
@@ -112,22 +133,36 @@ export async function updateWordPressCouponsPage(data: ExtractedCoupons): Promis
   const auth = Buffer.from(`${username}:${password}`).toString('base64');
   const html = generateCouponsHTML(data);
   const dateStr = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+  const title = `${data.eventName || 'Cupones AliExpress'} — ${dateStr}`;
+
+  // Verificar si ya existe un post de esta campaña
+  const existingId = await findExistingCampaignPost(baseUrl, auth, categoryId, data.eventName || '');
 
   const body = {
-    title: `Cupones AliExpress — ${dateStr}`,
+    title,
     content: html,
     status: 'publish',
     categories: [categoryId],
   };
 
-  const res = await fetch(`${baseUrl}/wp-json/wp/v2/posts`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Basic ${auth}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
+  let res;
+  if (existingId) {
+    // Actualizar post existente
+    res = await fetch(`${baseUrl}/wp-json/wp/v2/posts/${existingId}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    console.log(`♻️  Actualizando post existente de "${data.eventName}" (ID: ${existingId})`);
+  } else {
+    // Crear post nuevo
+    res = await fetch(`${baseUrl}/wp-json/wp/v2/posts`, {
+      method: 'POST',
+      headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    console.log(`🆕 Creando nuevo post para campaña "${data.eventName}"`);
+  }
 
   if (!res.ok) {
     const err = await res.json() as any;
