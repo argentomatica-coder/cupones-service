@@ -13,10 +13,14 @@ const getFlagEmoji = (code: string): string => {
 const getCountryName = (code: string): string => {
   const map: Record<string, string> = {
     ES:'España', FR:'Francia', BR:'Brasil', US:'Estados Unidos', UK:'Reino Unido',
-    DE:'Alemania', IT:'Italia', PL:'Polonia', NL:'Holanda', MX:'México',
-    AR:'Argentina', CL:'Chile', CO:'Colombia', PE:'Perú', UY:'Uruguay',
-    VE:'Venezuela', EC:'Ecuador', GLOBAL:'Global (todos los países)',
-    GCC:'Arabia / Golfo', IL:'Israel',
+    GB:'Reino Unido', DE:'Alemania', IT:'Italia', PL:'Polonia', NL:'Holanda',
+    MX:'México', AR:'Argentina', CL:'Chile', CO:'Colombia', PE:'Perú',
+    UY:'Uruguay', VE:'Venezuela', EC:'Ecuador', GLOBAL:'Global (todos los países)',
+    GCC:'Arabia / Golfo', IL:'Israel', IN:'India', AU:'Australia', CA:'Canadá',
+    AT:'Austria', BE:'Bélgica', CH:'Suiza', CZ:'República Checa', DK:'Dinamarca',
+    FI:'Finlandia', HU:'Hungría', IE:'Irlanda', PT:'Portugal', SE:'Suecia',
+    NO:'Noruega', KR:'Corea del Sur', JP:'Japón', UA:'Ucrania', RU:'Rusia',
+    SA:'Arabia Saudita', AE:'Emiratos Árabes', TR:'Turquía', ZA:'Sudáfrica',
   };
   return map[code.toUpperCase()] || code;
 };
@@ -62,7 +66,13 @@ function generateCouponsHTML(data: ExtractedCoupons): string {
       return `
             <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f4f6fb;flex-wrap:wrap;gap:8px;">
               <div>
-                <span style="color:#d4450c;font-size:1.1rem;font-weight:800;">${c.discount}</span>
+                <span style="color:#d4450c;font-size:1.1rem;font-weight:800;">${(()=>{
+                  const d = c.discount || '';
+                  // Si el formato es "€X-€Y" extraer solo el descuento (segunda parte)
+                  const m = d.match(/[\d.,]+[^\d.,]+[\-–][^\d.,]?([\d.,]+)/);
+                  if (m) return m[1] + d.replace(/.*[\-–][^\d.,]?[\d.,]+/, '').replace(/[\d.,]+/g, '').trim() + ' de descuento';
+                  return d;
+                })()}</span>
                 ${c.minPurchase ? `<span style="color:#5a6a82;font-size:0.85rem;margin-left:6px;">en compras ${c.minPurchase}</span>` : ''}
                 <div style="font-size:0.8rem;color:#5a6a82;margin-top:2px;">Código para ${name}</div>
                 ${expiry ? `<div style="font-size:0.75rem;color:#aaa;margin-top:2px;">⏰ ${expiry}</div>` : ''}

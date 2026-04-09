@@ -53,7 +53,7 @@ IMPORTANTE:
 - Extraé ABSOLUTAMENTE TODOS los códigos de cupón del email, sin excepción. No omitas ninguno.
 - Los emails de AliExpress tienen secciones por región/país: España, Argentina, México, Colombia, Brasil, India, Israel, Arabia (GCC), etc. Extraé los cupones de TODAS las secciones.
 - Cada sección suele tener varios cupones escalonados (ILAFF1, ILAFF2... o ESGS02, ESGS04...) — extraelos TODOS.
-- Para cada cupón: código exacto, descuento (ej: "5€ de descuento"), mínimo de compra, fechas de validez, y el país/región al que aplica.
+- Para cada cupón: código exacto, descuento en formato SOLO el ahorro (ej: "5€ de descuento", "15% OFF", "$3 off") — NO pongas "X-Y", solo el valor del descuento, mínimo de compra, fechas de validez, y el país/región al que aplica.
 - El campo "countries" debe ser un array con el código ISO del país: ES, AR, MX, CO, CL, BR, PE, UY, VE, EC, US, IL, IN, o GCC para Arabia/Golfo.
 - Si un cupón aplica a todos los países, usá ["GLOBAL"].
 - El campo "rawSummary" debe ser 2-4 frases en español mencionando los descuentos más destacados, países disponibles y fechas.
