@@ -29,7 +29,7 @@ function cleanEmailHtml(html: string): string {
     .replace(/=\r?\n/g, '') // quoted-printable line continuations
     .replace(/\s+/g, ' ')
     .trim()
-    .slice(0, 8000); // limitar tokens
+    .slice(0, 20000); // limitar tokens
 }
 
 export async function extractCouponsFromEmail(
@@ -50,12 +50,14 @@ CONTENIDO:
 ${cleanText}
 
 IMPORTANTE:
-- Extraé todos los códigos que veas (suelen estar en rojo o destacados, ej: ES10OFF, ILAFF1, GCC1, etc.)
-- Para cada cupón identificá: código, descuento (en euros/porcentaje), mínimo de compra si aparece, fecha de validez, y países/regiones a los que aplica
-- Si hay cupones para España (ES) priorizalos
-- El campo "countries" debe ser un array de códigos de país ISO (ES, AR, MX, CO, etc.)
-- El campo "rawSummary" debe ser un párrafo en español natural explicando las ofertas disponibles, útil para SEO (2-4 frases, menciona los descuentos más destacados y las fechas)
-- El campo "eventName" es el nombre del evento/campaña (ej: "Anniversary Sale", "Super Deals")
+- Extraé ABSOLUTAMENTE TODOS los códigos de cupón del email, sin excepción. No omitas ninguno.
+- Los emails de AliExpress tienen secciones por región/país: España, Argentina, México, Colombia, Brasil, India, Israel, Arabia (GCC), etc. Extraé los cupones de TODAS las secciones.
+- Cada sección suele tener varios cupones escalonados (ILAFF1, ILAFF2... o ESGS02, ESGS04...) — extraelos TODOS.
+- Para cada cupón: código exacto, descuento (ej: "5€ de descuento"), mínimo de compra, fechas de validez, y el país/región al que aplica.
+- El campo "countries" debe ser un array con el código ISO del país: ES, AR, MX, CO, CL, BR, PE, UY, VE, EC, US, IL, IN, o GCC para Arabia/Golfo.
+- Si un cupón aplica a todos los países, usá ["GLOBAL"].
+- El campo "rawSummary" debe ser 2-4 frases en español mencionando los descuentos más destacados, países disponibles y fechas.
+- El campo "eventName" es el nombre del evento (ej: "Anniversary Sale", "Super Deals", "Big Save").
 
 Devolvé SOLO este JSON sin markdown ni explicaciones:
 {
